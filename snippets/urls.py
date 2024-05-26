@@ -9,6 +9,8 @@ urlpatterns = [
     path('post/<int:pk>/', views.PostDetails),
     path('secondSnippets/', views.SecondSnippetList),
     path('secondSnippets/<int:pk>/', views.SecondSnippetDetails),
+    path('secondPost/', views.secondPostList),
+    path('secondPost/<int:pk>/', views.secondPostListDetails),
 ]
 
 

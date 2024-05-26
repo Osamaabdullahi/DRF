@@ -5,6 +5,17 @@ from django.http import HttpResponse,JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 
+# return Response(data)  # Renders to content type as requested by the client.
+from rest_framework.response import Response
+from rest_framework.decorators import api_view,APIView
+from rest_framework import status
+# The @api_view decorator for working with function based views.
+# The APIView class for working with class-based views.
+# These wrappers provide a few bits of functionality such as making 
+# sure you receive Request instances in your view, and adding context to
+# Response objects so that content negotiation can be performed.
+
+
 
 
 """
@@ -99,20 +110,52 @@ def PostDetails(request,pk):
         post.delete()
         return HttpResponse(status=204)
 
+#updating my post into using apiview
+#using apiview enables us to use Response which determines for which content type to use
+#we can format to each function which determines the format it should be diplaues eg json 
+@api_view(['GET','POST'])
+def secondPostList(request,format=None):
+    if request.method=='GET':
+        post=Post.objects.all()
+        serilizer=POSTSerializer(post,many=True)
+        return Response(serilizer.data)
+    
+    elif request.method=='POST':
+        serilizer=POSTSerializer(data=request.data)
+        if serilizer.is_valid():
+            serilizer.save()
+            return Response(serilizer.data,status=status.HTTP_201_CREATED)
+        
+
+@api_view(['GET','PUT','DELETE'])
+def secondPostListDetails(request,pk, format=None):
+    try:
+        post=Post.objects.get(pk=pk)
+    except Post.DoesNotExist:
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    if request.method=='GET':
+        serilizer=POSTSerializer(post)#not using many=True since we only have one object
+        return Response(serilizer.data)
+    
+    elif request.method=='PUT':
+        serilizer=POSTSerializer(post,data=request.data)#first arg is the  data we want to cahnge and then the chnage
+        if serilizer.is_valid():
+            serilizer.save()
+            return Response(serilizer.data,status=status.HTTP_202_ACCEPTED)
+        return Response(serilizer.error,status=status.HTTP_400_BAD_REQUEST)
+
+
+    elif request.method == 'DELETE':
+            post.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # request.POST  # Only handles form data.  Only works for 'POST' method.
 # request.data  # Handles arbitrary data.  Works for 'POST', 'PUT' and 'PATCH' methods.
 
 
-# return Response(data)  # Renders to content type as requested by the client.
-from rest_framework.response import Response
-from rest_framework.decorators import api_view,APIView
-from rest_framework import status
-# The @api_view decorator for working with function based views.
-# The APIView class for working with class-based views.
-# These wrappers provide a few bits of functionality such as making 
-# sure you receive Request instances in your view, and adding context to
-# Response objects so that content negotiation can be performed.
+
 
 @api_view(['GET','POST'])
 def SecondSnippetList(request, format=None):
