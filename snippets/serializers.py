@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Snippet,LANGUAGE_CHOICES,STYLE_CHOICES
+from .models import Snippet,LANGUAGE_CHOICES,STYLE_CHOICES,Post
 
 
 #The first part of the serializer class defines the fields that get serialized/deserialized.
@@ -40,3 +40,22 @@ class SnippetSerializer(serializers.ModelSerializer):
         model = Snippet
         fields = ['id', 'title', 'code', 'linenos', 'language', 'style']
 
+
+
+class PostSerializer(serializers.Serializer):
+    title = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    content=serializers.CharField(style={"base_template":"textarea.html"})
+
+    def create(self,validated_data):
+        return Post.objects.create(**validated_data)
+    
+    def update(self,instance,validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.content = validated_data.get('content', instance.content)
+
+
+
+class POSTSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content']

@@ -1,6 +1,7 @@
 from django.db import models
 from pygments.lexers import get_all_lexers
 from pygments.styles import get_all_styles
+from django.utils import timezone
 
 LEXERS = [item for item in get_all_lexers() if item[1]]
 LANGUAGE_CHOICES = sorted([(item[1][0], item[0]) for item in LEXERS])
@@ -20,5 +21,14 @@ class Snippet(models.Model):
 
 
 
+class Post(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at =  models.DateTimeField(auto_now=True)
+    published =  models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
 
 
