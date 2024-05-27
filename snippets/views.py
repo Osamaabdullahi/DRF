@@ -202,3 +202,103 @@ def SecondSnippetDetails(request,pk, format=None):
 
 # format=None
 # To take advantage of the fact that our responses are no longer hardwired to a single content type let's add support for format suffixes to our API endpoints. Using format suffixes gives us URLs that explicitly refer to a given format, and means our API will be able to handle URLs such as http://example.com/api/items/4.json.
+
+#Tutorial 3: Class-based Views
+#we will be using apiview
+
+from rest_framework.views import APIView
+from django.http import Http404
+
+
+class snippetClassList(APIView):
+
+    def get(self,request,format=None):
+        snippet=Snippet.objects.all()
+        serilizer=SnippetSerializer(snippet,many=True)
+        return Response(serilizer.data)
+    
+    def post(self,request,format=None):
+        serilizer=SnippetSerializer(data=request.data)
+        if serilizer.is_valid():
+            serilizer.save()
+            return Response(serilizer.data,status=status.HTTP_201_CREATED)
+        return Response(serilizer.error,status=status.HTTP_400_BAD_REQUEST)
+
+class SnippetDetailClass(APIView):
+
+    def get_object(self, pk):
+        try:
+            return Snippet.objects.get(pk=pk)
+        except Snippet.DoesNotExist:
+            raise Http404
+        
+    def get(self,request,pk,format=None):
+        serilizer=SnippetSerializer(self.get_object(pk))
+        return Response(serilizer.data)
+    
+    def put(self,request,pk,format=None):
+        serilizer=SnippetSerializer(self.get_object(pk),data=request.data)
+        if serilizer.is_valid():
+            serilizer.save()
+            return Response(serilizer.data)
+        return Response(serilizer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,pk,format=None):
+        snippet = self.get_object(pk)
+        snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+# Using mixins
+# One of the big wins of using class-based views is that it allows us to easily compose reusable bits of behavior.
+
+# The create/retrieve/update/delete operations that we've been using so far are going to be pretty similar for any model-backed API views we create. Those bits of common behavior are implemented in REST framework's mixin classes.
+
+from rest_framework import mixins
+from rest_framework import generics
+
+class SnippetList(mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+# The base class provides the core functionality, and the mixin classes provide the .list() and .create() actions. We're then explicitly binding the get and post methods to the appropriate actions. Simple enough stuff so far.
+
+
+
+#GenericAPIView is used to provide the core functionality
+class snippetDetailMixins(generics.GenericAPIView,mixins.RetrieveModelMixin,mixins.DestroyModelMixin,mixins.UpdateModelMixin):
+
+    queryset=Snippet.objects.all()
+    serializer_class=SnippetSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+    
+
+# # Pretty similar. Again we're using the GenericAPIView class to provide the core functionality, and adding in mixins to provide the .retrieve(), .update() and .destroy() actions.
+
+
+# Using generic class-based views
+# Using the mixin classes we've rewritten the views to use slightly less code than before, but we can go one step further. REST framework provides a set of already mixed-in generic views that we can use to trim down our views.py module even more.
+
+
+class SnippetgenericList(generics.ListCreateAPIView):
+    queryset=Snippet.objects.all()
+    serializer_class=SnippetSerializer
+
+class SnippetgenericDetails(generics.RetrieveUpdateDestroyAPIView):
+    queryset=Snippet.objects.all()
+    serializer_class=SnippetSerializer

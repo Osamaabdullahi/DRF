@@ -11,6 +11,10 @@ urlpatterns = [
     path('secondSnippets/<int:pk>/', views.SecondSnippetDetails),
     path('secondPost/', views.secondPostList),
     path('secondPost/<int:pk>/', views.secondPostListDetails),
+    path('snippetClass/', views.snippetClassList.as_view()),
+    path('snippetClass/<int:pk>/', views.SnippetDetailClass.as_view()),
+    path('SnippetgenericList/', views.SnippetgenericList.as_view()),
+    path('SnippetgenericList/<int:pk>/', views.SnippetgenericDetails.as_view()),
 ]
 
 
