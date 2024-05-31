@@ -12,6 +12,8 @@ from pygments.formatters.html import HtmlFormatter
 from pygments import highlight
 
 
+#owner is saved as a property
+
 class Snippet(models.Model):
     owner = models.ForeignKey('auth.User', related_name='snippets', on_delete=models.CASCADE)
     highlighted = models.TextField()
@@ -41,6 +43,7 @@ class Snippet(models.Model):
 
 
 class Post(models.Model):
+    owner=models.ForeignKey("auth.User",related_name='post',on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
@@ -68,3 +71,41 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+    bio = models.TextField()
+ 
+    def __str__(self):
+        return self.name
+
+
+class Language(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Genre(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Book(models.Model):
+    author = models.ForeignKey(Author, on_delete=models.CASCADE,related_name='books', null=True)
+    genre = models.ManyToManyField(Genre, related_name='genre')
+    language = models.ForeignKey(Language,related_name='language', on_delete=models.Case, null=True)
+
+    title = models.CharField(max_length=200)
+    summary = models.TextField()
+ 
+
+    def __str__(self):
+        return self.title
+
+
