@@ -1,6 +1,6 @@
-from .models import Snippet
+from .models import Snippet,Post
 from django.contrib.auth.models import User
-from .serializers import SnippetSerializer,UserSerializer
+from .serializers import SnippetSerializer,UserSerializer,PostSerilizer
 from rest_framework import generics
 from rest_framework.reverse import reverse
 from rest_framework.decorators import api_view
@@ -69,4 +69,10 @@ class SnippetViewset(viewsets.ModelViewSet):
 
     
 
+class PostViewset(viewsets.ModelViewSet):
+    queryset=Post.objects.all()
+    serializer_class=PostSerilizer
+
+    def perform_create(self, serializer):
+        return serializer.save(owner=self.request.user)
 
